@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,7 +17,6 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Mess of a fragment, work heavily in progress
@@ -50,9 +50,12 @@ public class MainScreenFragment extends Fragment {
                 m_btAdapter.startDiscovery();
             }
         });
+        bt_scan_button.setEnabled(m_btAdapter.isEnabled());
 
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        getActivity().registerReceiver(m_btReceiver, filter);
+        IntentFilter filterFound = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        IntentFilter filterStateChanged = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        getActivity().registerReceiver(m_btListReceiver, filterFound);
+        getActivity().registerReceiver(m_btStateReceiver, filterStateChanged);
 
         m_arrayAdapter = new ArrayAdapter<String>(v.getContext(),
                 android.R.layout.simple_list_item_1,
@@ -67,7 +70,8 @@ public class MainScreenFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        getActivity().unregisterReceiver(m_btReceiver);
+        getActivity().unregisterReceiver(m_btListReceiver);
+        getActivity().unregisterReceiver(m_btStateReceiver);
     }
 
     static final private String c_btScaleDeviceName = "VScale";
@@ -76,7 +80,7 @@ public class MainScreenFragment extends Fragment {
     private ArrayAdapter<String> m_arrayAdapter;
     private BluetoothDevice m_btScaleDevice = null;
 
-    private final BroadcastReceiver m_btReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver m_btListReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -85,6 +89,26 @@ public class MainScreenFragment extends Fragment {
                 m_arrayAdapter.add(device.getName() + " , " + device.getAddress());
                 if (device.getName().equals(c_btScaleDeviceName)) {
                     m_btScaleDevice = device;
+                }
+            }
+        }
+    };
+
+    private final BroadcastReceiver m_btStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
+                switch (state) {
+                    case BluetoothAdapter.STATE_ON:
+                        getView().findViewById(R.id.bt_on_button).setEnabled(false);
+                        getView().findViewById(R.id.bt_scan_button).setEnabled(true);
+                        break;
+                    case BluetoothAdapter.STATE_OFF:
+                        getView().findViewById(R.id.bt_on_button).setEnabled(true);
+                        getView().findViewById(R.id.bt_scan_button).setEnabled(false);
+                        break;
                 }
             }
         }
