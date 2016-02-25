@@ -1,8 +1,8 @@
-### AEG PW5653 BT
+# AEG PW5653 BT
 
 ## Original application analysis
 
-# Initial observations
+### Initial observations
 
 For scale to provide all the more advanced parameters, needs to have:
 
@@ -12,7 +12,7 @@ For scale to provide all the more advanced parameters, needs to have:
 
 Weight result can be provided in either kilograms, pounds or stones.
 
-# Bluetooth logs
+### Bluetooth logs
 
 Using developer setting that allows to store bluetooth communication logs,
 It can be easily proven that all needed information is send as one message to
@@ -25,7 +25,7 @@ All the communication made using Bluetooth Low Energy standard.
 Additionally, analysis of system logs shows that notifications are activated for
 1a2ea400-75b9-11e2-be05-0002a5d5c51b characteristic
 
-# Dissasembled code
+### Dissasembled code
 
 Among all the obfuscated code, you can find a few Bluetooth Low Energy
 characteristics/descriptors UUIDs stored as static strings:
@@ -40,7 +40,7 @@ characteristics/descriptors UUIDs stored as static strings:
 
 An version of app was created to simply establish bluetooth connection to
 the device and then list all services/characteristics/descriptors avaliable.
-
+```
 service 1 : 78667579-7b48-43db-b8c5-7928a6b0a335
   char: 78667579-a914-49a4-8333-aa3c0cd8fedc
    prop: 8 Write
@@ -69,4 +69,5 @@ service 3 : 78667579-0e7c-45ac-bb53-5279f8ee16fc
 service 4 : 78667579-b465-4ef3-a5c6-e8d9bc6c3f8f
   char: 78667579-a914-49a4-8333-aa3c0cd8fedc
    prop: 8 Write
+```
 
