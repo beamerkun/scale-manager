@@ -27,4 +27,73 @@
         android:layout_alignParentStart="true"
         android:enabled="true" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="write service 2"
+        android:id="@+id/bt_s2_w"
+        android:layout_below="@+id/bt_scan_button"
+        android:layout_alignStart="@+id/bt_s3_w" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="read service 3"
+        android:id="@+id/bt_s3_r"
+        android:layout_below="@+id/bt_s2_w"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="write service 3"
+        android:id="@+id/bt_s3_w"
+        android:layout_alignTop="@+id/bt_s3_r"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Read service 2"
+        android:id="@+id/bt_s2_r"
+        android:layout_above="@+id/bt_s3_r"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="read service 4"
+        android:id="@+id/bt_s4_r"
+        android:layout_below="@+id/bt_s3_r"
+        android:layout_alignParentStart="true"
+        android:layout_alignEnd="@+id/bt_s3_r" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="write service 4"
+        android:id="@+id/bt_s4_w"
+        android:layout_below="@+id/bt_s3_w"
+        android:layout_alignParentEnd="true"
+        android:layout_alignStart="@+id/bt_s3_w" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="read service 1"
+        android:id="@+id/bt_s1_r"
+        android:layout_below="@+id/bt_s4_r"
+        android:layout_alignParentStart="true"
+        android:layout_alignEnd="@+id/bt_s4_r" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="write service 1"
+        android:id="@+id/bt_s1_w"
+        android:layout_alignTop="@+id/bt_s1_r"
+        android:layout_alignStart="@+id/bt_s4_w"
+        android:layout_alignParentEnd="true" />
+
 </RelativeLayout>

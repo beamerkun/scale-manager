@@ -5,13 +5,19 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothHealth;
+import android.bluetooth.BluetoothHealthAppConfiguration;
+import android.bluetooth.BluetoothHealthCallback;
 import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
+import android.os.ParcelFileDescriptor;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,10 +26,34 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import java.util.Formatter;
+import java.util.List;
+import java.util.UUID;
+
 /**
  * Mess of a fragment, work heavily in progress
  */
 public class MainScreenFragment extends Fragment {
+
+    private void readAllCharacteristics(BluetoothGattService service) {
+        if (service != null) {
+            for (BluetoothGattCharacteristic c : service.getCharacteristics()) {
+                m_btGatt.readCharacteristic(c);
+            }
+        }
+    }
+
+    private void writeAllCharacteristics(BluetoothGattService service) {
+        if (service != null) {
+            for (BluetoothGattCharacteristic c : service.getCharacteristics()) {
+                byte[] val = {(byte)0xff, (byte)0xff, (byte) 0xff, (byte) 0xff};
+                c.setValue(val);
+                m_btGatt.writeCharacteristic(c);
+            }
+        }
+    }
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -31,6 +61,14 @@ public class MainScreenFragment extends Fragment {
 
         final Button bt_on_button = (Button) v.findViewById(R.id.bt_on_button);
         final Button bt_scan_button = (Button) v.findViewById(R.id.bt_scan_button);
+        final Button bt_s1_w = (Button) v.findViewById(R.id.bt_s1_w);
+        final Button bt_s2_w = (Button) v.findViewById(R.id.bt_s2_w);
+        final Button bt_s3_w = (Button) v.findViewById(R.id.bt_s3_w);
+        final Button bt_s4_w = (Button) v.findViewById(R.id.bt_s4_w);
+        final Button bt_s1_r = (Button) v.findViewById(R.id.bt_s1_r);
+        final Button bt_s2_r = (Button) v.findViewById(R.id.bt_s2_r);
+        final Button bt_s3_r = (Button) v.findViewById(R.id.bt_s3_r);
+        final Button bt_s4_r = (Button) v.findViewById(R.id.bt_s4_r);
 
         bt_on_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -43,7 +81,7 @@ public class MainScreenFragment extends Fragment {
         bt_scan_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(m_btScaleDevice == null)
+                if (m_btScaleDevice == null)
                     btLeScan();
                 else
                     m_btGatt.discoverServices();
@@ -51,7 +89,93 @@ public class MainScreenFragment extends Fragment {
         });
         bt_scan_button.setEnabled(m_btAdapter.isEnabled());
 
-        IntentFilter filterFound = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        bt_s2_w.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (m_btGatt == null)
+                    return;
+                BluetoothGattService service2 = m_btGatt.getService(c_scaleDeviceServiceUUID_2);
+                UUID c_Service2CharUUID_1 = UUID.fromString("1a2ea400-75b9-11e2-be05-0002a5d5c51b");
+                UUID c_Service2CharUUID_2 = UUID.fromString("23b4fec0-75b9-11e2-972a-0002a5d5c51b");
+                UUID c_Service2CharUUID_3 = UUID.fromString("29f11080-75b9-11e2-8bf6-0002a5d5c51b");
+                if (service2 != null) {
+                    System.out.println("service 2");
+                    BluetoothGattCharacteristic char1 = service2.getCharacteristic(c_Service2CharUUID_1);
+                    BluetoothGattCharacteristic char2 = service2.getCharacteristic(c_Service2CharUUID_2);
+                    BluetoothGattCharacteristic char3 = service2.getCharacteristic(c_Service2CharUUID_3);
+
+                    m_btGatt.setCharacteristicNotification(char1, true);
+
+                    byte[] arr = {0x10, 0x00, 0x00, (byte) 0xB6, (byte) 0x18};
+                    char3.setValue(arr);
+                    m_btGatt.writeCharacteristic(char3);
+
+                    char2.getDescriptors().get(0).setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
+                    m_btGatt.writeCharacteristic(char2);
+
+                    for (BluetoothGattCharacteristic c : service2.getCharacteristics()) {
+                        m_btGatt.readCharacteristic(c);
+                    }
+                }
+            }
+        });
+
+        bt_s1_w.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(m_btGatt != null)
+                    writeAllCharacteristics(m_btGatt.getService(c_scaleDeviceServiceUUID_1));
+            }
+        });
+
+        bt_s3_w.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(m_btGatt != null)
+                    writeAllCharacteristics(m_btGatt.getService(c_scaleDeviceServiceUUID_3));
+            }
+        });
+
+        bt_s4_w.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(m_btGatt != null)
+                    writeAllCharacteristics(m_btGatt.getService(c_scaleDeviceServiceUUID_4));
+            }
+        });
+
+        bt_s1_r.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(m_btGatt != null)
+                    readAllCharacteristics(m_btGatt.getService(c_scaleDeviceServiceUUID_1));
+            }
+        });
+
+        bt_s2_r.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(m_btGatt != null)
+                    readAllCharacteristics(m_btGatt.getService(c_scaleDeviceServiceUUID_2));
+            }
+        });
+
+        bt_s3_r.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(m_btGatt != null)
+                    readAllCharacteristics(m_btGatt.getService(c_scaleDeviceServiceUUID_3));
+            }
+        });
+
+        bt_s4_r.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(m_btGatt != null)
+                    readAllCharacteristics(m_btGatt.getService(c_scaleDeviceServiceUUID_4));
+            }
+        });
+
         IntentFilter filterStateChanged = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         getActivity().registerReceiver(m_btStateReceiver, filterStateChanged);
 
@@ -83,6 +207,24 @@ public class MainScreenFragment extends Fragment {
     private static final long c_scanPeriod = 10000;
     private static final String c_scaleDeviceName = "VScale";
 
+    // TODO: Find out which service does what
+
+    // ????
+    private static final UUID c_scaleDeviceServiceUUID_1 =
+            UUID.fromString("78667579-7b48-43db-b8c5-7928a6b0a335");
+
+    // ????
+    private static final UUID c_scaleDeviceServiceUUID_2 =
+            UUID.fromString("f433bd80-75b8-11e2-97d9-0002a5d5c51b");
+
+    // Measurement ?
+    private static final UUID c_scaleDeviceServiceUUID_3 =
+            UUID.fromString("78667579-0e7c-45ac-bb53-5279f8ee16fc");
+
+    // ????
+    private static final UUID c_scaleDeviceServiceUUID_4 =
+            UUID.fromString("78667579-b465-4ef3-a5c6-e8d9bc6c3f8f");
+
     private Handler m_btHandler = new Handler();
 
     private BluetoothAdapter m_btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -93,44 +235,52 @@ public class MainScreenFragment extends Fragment {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             String intentAction;
-            if(newState == BluetoothProfile.STATE_CONNECTED) {
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
                 System.out.println("Gatt connected");
                 gatt.discoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 System.out.println("Gatt disconnected");
+            } else {
+                System.out.println("new state " + newState);
             }
         }
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            if(status == BluetoothGatt.GATT_SUCCESS) {
-                for(BluetoothGattService service : gatt.getServices()) {
-                    if(service.getType() == BluetoothGattService.SERVICE_TYPE_SECONDARY)
-                        continue;
-                    // filter out standard services
-                    if(service.getUuid().toString().endsWith("00805f9b34fb"))
-                        continue;
-                    System.out.printf("service: %s%n", service.getUuid());
-                    for(BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-                        System.out.printf("  char perm: %d%n", characteristic.getPermissions());
-                        System.out.printf("  char prop: %d%n", characteristic.getProperties());
-                    }
-                }
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                BluetoothGattService service2 = gatt.getService(c_scaleDeviceServiceUUID_2);
             }
         }
 
         @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if(status == BluetoothGatt.GATT_SUCCESS) {
-                System.out.println(characteristic.toString());
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                System.out.println("write char:" + characteristic.getUuid().toString());
+            } else {
+                System.out.println("write failed " + status);
             }
+        }
+
+
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                System.out.println("read char:" + characteristic.getUuid().toString());
+            } else {
+                System.out.println("read failed " + status);
+            }
+        }
+
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            System.out.println("changed char:" + characteristic.getUuid().toString());
         }
     };
 
     private BluetoothAdapter.LeScanCallback m_btLeScanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-            if(c_scaleDeviceName.equals(device.getName())) {
+            if (c_scaleDeviceName.equals(device.getName())) {
                 // Remove pending scan stop and run it manually
                 m_btHandler.removeCallbacksAndMessages(null);
                 m_btAdapter.stopLeScan(this);
