@@ -23,7 +23,14 @@ The result is also sent as one message.
 All the communication made using Bluetooth Low Energy standard.
 
 Additionally, analysis of system logs shows that notifications are activated for
-1a2ea400-75b9-11e2-be05-0002a5d5c51b characteristic
+1a2ea400-75b9-11e2-be05-0002a5d5c51b characteristic.
+
+Further examination (with additional analysis of debug messages left in original
+applicaton) led to discovery of data flow:
+
+* Scale informs application about weight measurement
+* Application writes parameters provided by user
+* Scale updates initial measurement with rest of measurements
 
 ### Dissasembled code
 
@@ -40,6 +47,9 @@ characteristics/descriptors UUIDs stored as static strings:
 
 An version of app was created to simply establish bluetooth connection to
 the device and then list all services/characteristics/descriptors avaliable.
+
+Device can be easily distinguished by name 'VScale'
+
 ```
 service 1 : 78667579-7b48-43db-b8c5-7928a6b0a335
   char: 78667579-a914-49a4-8333-aa3c0cd8fedc
@@ -71,3 +81,57 @@ service 4 : 78667579-b465-4ef3-a5c6-e8d9bc6c3f8f
    prop: 8 Write
 ```
 
+## Communicating with the scale
+
+To successfully get measurements, we only need one service UUID=f433bd80-75b8-11e2-97d9-0002a5d5c51b.
+
+First, after connecting to the device we need to activate notifications on first
+characteristic (UUID=1a2ea400-75b9-11e2-be05-0002a5d5c51b).
+
+When the scale finishes measuring weight, it writes only the weight to first characteristic.
+
+Then it expects a write to the third characteristic (UUID=29f11080-75b9-11e2-8bf6-0002a5d5c51b),
+ with data that contains user parameters.
+
+*NOTE: Every write to the third characteristic starts additional measurements*
+
+When measurements are ready, scale writes results to the first notification.
+
+## Data scheme
+
+Unknown data field meanings have values found in captured logs specified inside parentheses
+
+### User data
+
+Byte offset | Contents
+----------- | --------
+0 | ??? (0x10)
+1 | ??? (0x00)
+2 | ??? (0x00)
+3 | Age
+4 | Height in cm
+
+### Results
+
+Bytes 0-3 seem to repeat provided user data
+
+0 | ???
+1 | ???
+2 | Age
+3 | Height in cm
+4 | Weight high byte
+5 | Weight low byte
+6 | ???
+7 | ???
+8 | ???
+9 | ???
+10 | ???
+11 | ???
+12 | ???
+13 | ???
+14 | ???
+15 | ???
+16 | ???
+17 | ???
+18 | ???
+19 | ???
