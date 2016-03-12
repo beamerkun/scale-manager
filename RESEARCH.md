@@ -107,7 +107,7 @@ Byte offset | Contents
 ----------- | --------
 0 | ??? (0x10)
 1 | ??? (0x00)
-2 | ??? (0x00)
+2 | Gender (0x00 for male, 0x01 for female)
 3 | Age
 4 | Height in cm
 
@@ -118,22 +118,22 @@ Bytes 0-3 seem to repeat provided user data
 Byte offset | Contents
 ----------- | --------
 0 | ???
-1 | ???
+1 | Gender (0x00 for male, 0x01 for female)
 2 | Age
 3 | Height in cm
 4 | Weight high byte
 5 | Weight low byte
-6 | ???
-7 | ???
-8 | ???
-9 | ???
-10 | ???
-11 | ???
-12 | ???
-13 | ???
-14 | ???
-15 | ???
-16 | ???
-17 | ???
-18 | ???
+6 | Body fat high byte
+7 | Body fat low byte
+8 | Body water high byte
+9 | Body water low byte
+10 | Bone weight high byte
+11 | Bone weight low byte
+12 | Muscle mass high byte
+13 | Muscle mass low byte
+14 | Visceral fat (organ)
+15 | BMR high byte
+16 | BMR low byte
+17 | BMI high byte
+18 | BMI low byte
 19 | ???
