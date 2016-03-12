@@ -115,6 +115,8 @@ Byte offset | Contents
 
 Bytes 0-3 seem to repeat provided user data
 
+Byte offset | Contents
+----------- | --------
 0 | ???
 1 | ???
 2 | Age
