@@ -113,7 +113,9 @@ Byte offset | Contents
 
 ### Results
 
-Bytes 0-3 seem to repeat provided user data
+Bytes 0-3 seem to repeat provided user data.
+
+Most of data is kept in fixed-point numbers with one number after decimal point.
 
 Byte offset | Contents
 ----------- | --------

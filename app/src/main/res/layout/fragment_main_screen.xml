@@ -12,29 +12,12 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Turn bluetooth on"
-        android:id="@+id/bt_on_button"
-        android:layout_centerVertical="true"
+        android:text="Connect"
+        android:id="@+id/bt_connect_button"
+        android:enabled="true"
+        android:layout_marginTop="52dp"
+        android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start scan"
-        android:id="@+id/bt_scan_button"
-        android:layout_below="@+id/bt_on_button"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true"
-        android:enabled="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="GO!"
-        android:id="@+id/bt_handle"
-        android:layout_below="@+id/bt_scan_button"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true" />
 
 </RelativeLayout>
