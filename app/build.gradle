@@ -17,6 +17,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    sourceSets {
+        main {
+            java {
+                srcDir 'src-gen'
+            }
+        }
+    }
 }
 
 dependencies {
@@ -24,4 +31,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:22.0.0'
     compile 'com.android.support:design:22.2.0'
+    compile "de.greenrobot:greendao:2.1.0"
 }

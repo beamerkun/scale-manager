@@ -88,6 +88,7 @@ public class MainScreenFragment extends Fragment {
     }
 
     private static final long c_scanPeriod = 10000;
+    
     private static final String c_scaleDeviceName = "VScale";
 
     private static final UUID c_scaleServiceUUID =
@@ -155,8 +156,8 @@ public class MainScreenFragment extends Fragment {
             if(characteristic.getUuid() == m_btScaleResult.getUuid()) {
                 byte[] value = m_btScaleResult.getValue();
                 if(m_measurement == null) {
-                    int weight = value[4] << 8 + value[5];
-                    if (weight != 0) {
+                    Measurement temp = new Measurement(value);
+                    if (temp.weight != 0.0f) {
                         m_measurement = new Measurement();
 
                         m_btScaleUserData.setValue(c_testUserData);
