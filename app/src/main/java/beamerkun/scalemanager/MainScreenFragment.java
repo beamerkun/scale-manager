@@ -16,6 +16,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import beamerkun.scalemanager.dao.DaoMaster;
+import beamerkun.scalemanager.dao.DaoSession;
+import beamerkun.scalemanager.dao.Measurement;
+import beamerkun.scalemanager.dao.MeasurementDao;
+
 import java.util.Date;
 import java.util.UUID;
 
@@ -23,6 +28,11 @@ import java.util.UUID;
  * Mess of a fragment, work heavily in progress
  */
 public class MainScreenFragment extends Fragment {
+
+    private DaoMaster daoMaster;
+    private DaoMaster.DevOpenHelper helper;
+    private DaoSession daoSession;
+    private MeasurementDao measurementDao;
 
     public class Measurement {
         public Date date;
@@ -57,6 +67,11 @@ public class MainScreenFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_main_screen, container, false);
 
         final Button bt_connect_button = (Button) v.findViewById(R.id.bt_connect_button);
+
+        helper = new DaoMaster.DevOpenHelper(this.getActivity().getApplicationContext(), "scalemanager-db", null);
+        daoMaster = new DaoMaster(helper.getWritableDatabase());
+        daoSession = daoMaster.newSession();
+        measurementDao = daoSession.getMeasurementDao();
 
         bt_connect_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -166,7 +181,22 @@ public class MainScreenFragment extends Fragment {
                 } else {
                     m_measurement = new Measurement(value);
 
-                    // TODO: store this data somewhere
+                    beamerkun.scalemanager.dao.Measurement m =
+                            new beamerkun.scalemanager.dao.Measurement(
+                                    null,
+                                    new Date(),
+                                    m_measurement.weight,
+                                    m_measurement.bodyFat,
+                                    m_measurement.bodyWater,
+                                    m_measurement.boneWeight,
+                                    m_measurement.muscleMass,
+                                    m_measurement.visceralFat,
+                                    m_measurement.BMR,
+                                    m_measurement.BMI);
+
+                    measurementDao.insert(m);
+
+                    System.out.println(measurementDao.queryBuilder().list().size());
 
                     m_measurement = null;
                 }
