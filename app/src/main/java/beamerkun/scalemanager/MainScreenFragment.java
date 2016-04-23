@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import beamerkun.scalemanager.dao.Measurement;
+import beamerkun.scalemanager.dao.User;
 
 import java.util.UUID;
 
@@ -76,9 +77,6 @@ public class MainScreenFragment extends Fragment {
     private static final UUID c_gattClientCharacteristicConfigurationUUID =
             UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
-    private static byte[] c_testUserData =
-            {0x10, 0x00, 0x00, (byte) 0x18, (byte) 0xB6};
-
     private Handler m_btHandler = new Handler();
 
     private BluetoothAdapter m_btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -88,9 +86,10 @@ public class MainScreenFragment extends Fragment {
     private BluetoothGattCharacteristic m_btScaleUserData = null;
     private BluetoothGattCharacteristic m_btScaleResult = null;
 
-    private enum MeasurementState {NONE, WEIGHT, FULL}
+    private enum MeasurementState {NONE, WEIGHT, FULL};
 
-    ;
+    User test_user;
+
     MeasurementState m_measurementState = MeasurementState.NONE;
 
     private BluetoothGattCallback m_btGattCallback = new BluetoothGattCallback() {
@@ -142,12 +141,17 @@ public class MainScreenFragment extends Fragment {
                         //TODO restart connection
                         return;
 
-                    m_btScaleUserData.setValue(c_testUserData);
+                    // TODO do it better!
+                    test_user = StorageHelper.getInstance(getActivity().getApplicationContext()).getUser();
+
+                    m_btScaleUserData.setValue(test_user.toByteArray());
                     m_btGatt.writeCharacteristic(m_btScaleUserData);
                     m_measurementState = MeasurementState.WEIGHT;
                     break;
                 case WEIGHT:
-                    StorageHelper.getInstance(getActivity().getApplicationContext()).saveMeasurement(new Measurement(value));
+                    Measurement measurement = new Measurement(value);
+                    measurement.setUserId(test_user.getId());
+                    StorageHelper.getInstance(getActivity().getApplicationContext()).saveMeasurement(measurement);
                     m_measurementState = MeasurementState.FULL;
                     break;
                 default:

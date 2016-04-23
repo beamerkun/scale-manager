@@ -2,6 +2,7 @@ package beamerkun.scalemanager;
 
 import android.content.Context;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -30,7 +31,15 @@ public class StorageHelper {
         userDao.deleteAll();
 
         User test_user = new User();
-        test_user.setBirthday(new Date("08-05-1992"));
+
+        Date birthday = new Date();
+        try {
+            birthday = new SimpleDateFormat("dd-mm-yyyy").parse("08-05-1992");
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        test_user.setBirthday(birthday);
         test_user.setHeight(182);
         test_user.setIsMale(true);
         userDao.insert(test_user);

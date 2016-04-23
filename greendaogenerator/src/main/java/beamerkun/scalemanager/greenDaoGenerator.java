@@ -8,7 +8,7 @@ import de.greenrobot.daogenerator.ToMany;
 
 public class greenDaoGenerator {
     public static void main(String[] args) throws Exception {
-        Schema schema = new Schema(1, "beamerkun.scalemanager.dao");
+        Schema schema = new Schema(2, "beamerkun.scalemanager.dao");
 
         schema.enableKeepSectionsByDefault();
 
