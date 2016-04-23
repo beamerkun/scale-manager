@@ -22,7 +22,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name="beamerkun.scalemanager.StorageService" />
+        <service android:name=".StorageHelper" />
     </application>
 
 </manifest>

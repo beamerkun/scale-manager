@@ -6,7 +6,10 @@ import de.greenrobot.daogenerator.Schema;
 
 public class greenDaoGenerator {
     public static void main(String[] args) throws Exception {
-        Schema schema = new Schema(1, "beamerkun.scalemanager");
+        Schema schema = new Schema(1, "beamerkun.scalemanager.dao");
+
+        schema.enableKeepSectionsByDefault();
+
         addMeasurement(schema);
         new DaoGenerator().generateAll(schema, "app/src-gen");
     }

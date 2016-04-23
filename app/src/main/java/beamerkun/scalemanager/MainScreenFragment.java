@@ -16,62 +16,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import beamerkun.scalemanager.dao.DaoMaster;
-import beamerkun.scalemanager.dao.DaoSession;
 import beamerkun.scalemanager.dao.Measurement;
-import beamerkun.scalemanager.dao.MeasurementDao;
 
-import java.util.Date;
 import java.util.UUID;
 
 /**
  * Mess of a fragment, work heavily in progress
  */
 public class MainScreenFragment extends Fragment {
-
-    private DaoMaster daoMaster;
-    private DaoMaster.DevOpenHelper helper;
-    private DaoSession daoSession;
-    private MeasurementDao measurementDao;
-
-    public class Measurement {
-        public Date date;
-        public float weight = 0;
-        public float bodyFat = 0;
-        public float bodyWater = 0;
-        public float boneWeight = 0;
-        public float muscleMass = 0;
-        public int visceralFat = 0;
-        public int BMR = 0;
-        public float BMI = 0;
-
-        public Measurement() {
-            date = new Date();
-        }
-        public Measurement(byte[] bytes) {
-            date = new Date();
-            weight = (bytes[4] << 8 + bytes[5]) / 10f;
-            bodyFat = (bytes[6] << 8 + bytes[7]) / 10f;
-            bodyWater = (bytes[8] << 8 + bytes[9]) / 10f;
-            boneWeight = (bytes[10] << 8 + bytes[11]) / 10f;
-            muscleMass = (bytes[12] << 8 + bytes[13]) / 10f;
-            visceralFat = bytes[14];
-            BMR = bytes[15] << 8 + bytes[16];
-            BMI = (bytes[17] << 8 + bytes[18]) / 10f;
-        }
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_main_screen, container, false);
 
         final Button bt_connect_button = (Button) v.findViewById(R.id.bt_connect_button);
-
-        helper = new DaoMaster.DevOpenHelper(this.getActivity().getApplicationContext(), "scalemanager-db", null);
-        daoMaster = new DaoMaster(helper.getWritableDatabase());
-        daoSession = daoMaster.newSession();
-        measurementDao = daoSession.getMeasurementDao();
 
         bt_connect_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,7 +61,7 @@ public class MainScreenFragment extends Fragment {
     }
 
     private static final long c_scanPeriod = 10000;
-    
+
     private static final String c_scaleDeviceName = "VScale";
 
     private static final UUID c_scaleServiceUUID =
@@ -130,7 +88,10 @@ public class MainScreenFragment extends Fragment {
     private BluetoothGattCharacteristic m_btScaleUserData = null;
     private BluetoothGattCharacteristic m_btScaleResult = null;
 
-    private Measurement m_measurement = null;
+    private enum MeasurementState {NONE, WEIGHT, FULL}
+
+    ;
+    MeasurementState m_measurementState = MeasurementState.NONE;
 
     private BluetoothGattCallback m_btGattCallback = new BluetoothGattCallback() {
         @Override
@@ -138,12 +99,13 @@ public class MainScreenFragment extends Fragment {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 gatt.discoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                // TODO: prettify
                 m_btScaleDevice = null;
                 m_btGatt = null;
                 m_btScaleService = null;
                 m_btScaleUserData = null;
                 m_btScaleResult = null;
-                m_measurement = null;
+                m_measurementState = MeasurementState.NONE;
             }
         }
 
@@ -152,7 +114,7 @@ public class MainScreenFragment extends Fragment {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 m_btScaleService = m_btGatt.getService(c_scaleServiceUUID);
 
-                if(m_btScaleService == null)
+                if (m_btScaleService == null)
                     return;
 
                 m_btScaleUserData = m_btScaleService.getCharacteristic(c_scaleCharUserDataUUID);
@@ -168,41 +130,30 @@ public class MainScreenFragment extends Fragment {
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            if(characteristic.getUuid() == m_btScaleResult.getUuid()) {
-                byte[] value = m_btScaleResult.getValue();
-                if(m_measurement == null) {
+            if (characteristic.getUuid() != m_btScaleResult.getUuid())
+                return;
+
+            byte[] value = m_btScaleResult.getValue();
+            switch (m_measurementState) {
+                case FULL:
+                case NONE:
                     Measurement temp = new Measurement(value);
-                    if (temp.weight != 0.0f) {
-                        m_measurement = new Measurement();
+                    if (temp.getWeight() == 0.0f)
+                        //TODO restart connection
+                        return;
 
-                        m_btScaleUserData.setValue(c_testUserData);
-                        m_btGatt.writeCharacteristic(m_btScaleUserData);
-                    }
-                } else {
-                    m_measurement = new Measurement(value);
-
-                    beamerkun.scalemanager.dao.Measurement m =
-                            new beamerkun.scalemanager.dao.Measurement(
-                                    null,
-                                    new Date(),
-                                    m_measurement.weight,
-                                    m_measurement.bodyFat,
-                                    m_measurement.bodyWater,
-                                    m_measurement.boneWeight,
-                                    m_measurement.muscleMass,
-                                    m_measurement.visceralFat,
-                                    m_measurement.BMR,
-                                    m_measurement.BMI);
-
-                    measurementDao.insert(m);
-
-                    System.out.println(measurementDao.queryBuilder().list().size());
-
-                    m_measurement = null;
-                }
+                    m_btScaleUserData.setValue(c_testUserData);
+                    m_btGatt.writeCharacteristic(m_btScaleUserData);
+                    m_measurementState = MeasurementState.WEIGHT;
+                    break;
+                case WEIGHT:
+                    StorageHelper.getInstance(getActivity().getApplicationContext()).saveMeasurement(new Measurement(value));
+                    m_measurementState = MeasurementState.FULL;
+                    break;
+                default:
+                    return;
             }
         }
-
     };
 
     private BluetoothAdapter.LeScanCallback m_btLeScanCallback = new BluetoothAdapter.LeScanCallback() {
