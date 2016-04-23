@@ -22,6 +22,7 @@ public class Measurement {
     private Integer visceralFat;
     private Integer BMR;
     private Float BMI;
+    private long userId;
 
     // KEEP FIELDS - put your custom fields here
     // KEEP FIELDS END
@@ -33,7 +34,7 @@ public class Measurement {
         this.id = id;
     }
 
-    public Measurement(Long id, java.util.Date date, Float weight, Float bodyFat, Float bodyWater, Float boneWeight, Float muscleMass, Integer visceralFat, Integer BMR, Float BMI) {
+    public Measurement(Long id, java.util.Date date, Float weight, Float bodyFat, Float bodyWater, Float boneWeight, Float muscleMass, Integer visceralFat, Integer BMR, Float BMI, long userId) {
         this.id = id;
         this.date = date;
         this.weight = weight;
@@ -44,6 +45,7 @@ public class Measurement {
         this.visceralFat = visceralFat;
         this.BMR = BMR;
         this.BMI = BMI;
+        this.userId = userId;
     }
 
     public Long getId() {
@@ -124,6 +126,14 @@ public class Measurement {
 
     public void setBMI(Float BMI) {
         this.BMI = BMI;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(long userId) {
+        this.userId = userId;
     }
 
     // KEEP METHODS - put your custom methods here

@@ -1,5 +1,6 @@
 package beamerkun.scalemanager.dao;
 
+import java.util.List;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
@@ -7,6 +8,8 @@ import android.database.sqlite.SQLiteStatement;
 import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.Property;
 import de.greenrobot.dao.internal.DaoConfig;
+import de.greenrobot.dao.query.Query;
+import de.greenrobot.dao.query.QueryBuilder;
 
 import beamerkun.scalemanager.dao.Measurement;
 
@@ -33,8 +36,10 @@ public class MeasurementDao extends AbstractDao<Measurement, Long> {
         public final static Property VisceralFat = new Property(7, Integer.class, "visceralFat", false, "VISCERAL_FAT");
         public final static Property BMR = new Property(8, Integer.class, "BMR", false, "BMR");
         public final static Property BMI = new Property(9, Float.class, "BMI", false, "BMI");
+        public final static Property UserId = new Property(10, long.class, "userId", false, "USER_ID");
     };
 
+    private Query<Measurement> user_MeasurementsQuery;
 
     public MeasurementDao(DaoConfig config) {
         super(config);
@@ -57,7 +62,8 @@ public class MeasurementDao extends AbstractDao<Measurement, Long> {
                 "\"MUSCLE_MASS\" REAL," + // 6: muscleMass
                 "\"VISCERAL_FAT\" INTEGER," + // 7: visceralFat
                 "\"BMR\" INTEGER," + // 8: BMR
-                "\"BMI\" REAL);"); // 9: BMI
+                "\"BMI\" REAL," + // 9: BMI
+                "\"USER_ID\" INTEGER NOT NULL );"); // 10: userId
     }
 
     /** Drops the underlying database table. */
@@ -120,6 +126,7 @@ public class MeasurementDao extends AbstractDao<Measurement, Long> {
         if (BMI != null) {
             stmt.bindDouble(10, BMI);
         }
+        stmt.bindLong(11, entity.getUserId());
     }
 
     /** @inheritdoc */
@@ -141,7 +148,8 @@ public class MeasurementDao extends AbstractDao<Measurement, Long> {
             cursor.isNull(offset + 6) ? null : cursor.getFloat(offset + 6), // muscleMass
             cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7), // visceralFat
             cursor.isNull(offset + 8) ? null : cursor.getInt(offset + 8), // BMR
-            cursor.isNull(offset + 9) ? null : cursor.getFloat(offset + 9) // BMI
+            cursor.isNull(offset + 9) ? null : cursor.getFloat(offset + 9), // BMI
+            cursor.getLong(offset + 10) // userId
         );
         return entity;
     }
@@ -159,6 +167,7 @@ public class MeasurementDao extends AbstractDao<Measurement, Long> {
         entity.setVisceralFat(cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7));
         entity.setBMR(cursor.isNull(offset + 8) ? null : cursor.getInt(offset + 8));
         entity.setBMI(cursor.isNull(offset + 9) ? null : cursor.getFloat(offset + 9));
+        entity.setUserId(cursor.getLong(offset + 10));
      }
     
     /** @inheritdoc */
@@ -184,4 +193,18 @@ public class MeasurementDao extends AbstractDao<Measurement, Long> {
         return true;
     }
     
+    /** Internal query to resolve the "measurements" to-many relationship of User. */
+    public List<Measurement> _queryUser_Measurements(long userId) {
+        synchronized (this) {
+            if (user_MeasurementsQuery == null) {
+                QueryBuilder<Measurement> queryBuilder = queryBuilder();
+                queryBuilder.where(Properties.UserId.eq(null));
+                user_MeasurementsQuery = queryBuilder.build();
+            }
+        }
+        Query<Measurement> query = user_MeasurementsQuery.forCurrentThread();
+        query.setParameter(0, userId);
+        return query.list();
+    }
+
 }
