@@ -5,8 +5,6 @@ import android.content.Context;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 import beamerkun.scalemanager.dao.DaoMaster;
 import beamerkun.scalemanager.dao.DaoSession;
@@ -18,7 +16,11 @@ import beamerkun.scalemanager.dao.UserDao;
 public class StorageHelper {
 
     public static StorageHelper sInstance = null;
-
+    private DaoMaster.OpenHelper helper = null;
+    private DaoMaster daoMaster = null;
+    private DaoSession daoSession = null;
+    private MeasurementDao measurementDao = null;
+    private UserDao userDao = null;
     private StorageHelper(Context context) {
         helper = new DaoMaster.DevOpenHelper(context, "scalemanager-db", null);
         daoMaster = new DaoMaster(helper.getWritableDatabase());
@@ -46,16 +48,10 @@ public class StorageHelper {
     }
 
     static StorageHelper getInstance(Context context) {
-        if(sInstance == null)
+        if (sInstance == null)
             sInstance = new StorageHelper(context);
         return sInstance;
     }
-
-    private DaoMaster.OpenHelper helper = null;
-    private DaoMaster daoMaster = null;
-    private DaoSession daoSession = null;
-    private MeasurementDao measurementDao = null;
-    private UserDao userDao = null;
 
     public void saveMeasurement(Measurement measurement) {
         measurementDao.insert(measurement);
